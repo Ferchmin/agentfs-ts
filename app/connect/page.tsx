@@ -88,29 +88,46 @@ function ConnectContent() {
     const mcpCmd = `claude mcp add --transport http agentfs "${window.location.origin}/api/mcp?key=${manualKey}"`;
     return (
       <Shell>
-        <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>&#10003;</div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
-            Connected!
-          </h1>
-          <p style={{ color: "#666", fontSize: 15, marginBottom: 24 }}>
-            Copy this command into your terminal:
-          </p>
-          <div
-            className="code-block"
-            style={{ textAlign: "left", fontSize: 12, marginBottom: 16 }}
-          >
-            <button
-              className="copy-btn"
-              onClick={() => navigator.clipboard.writeText(mcpCmd)}
-            >
-              Copy
-            </button>
-            <code>{mcpCmd}</code>
+        <div>
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>&#10003;</div>
+            <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
+              You&apos;re in!
+            </h1>
           </div>
-          <p style={{ color: "#999", fontSize: 13 }}>
-            Your API key: <code style={{ fontFamily: "var(--font-mono)" }}>{manualKey}</code>
-          </p>
+
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ fontSize: 13, color: "#666", marginBottom: 8, fontWeight: 500 }}>
+              Your API key
+            </p>
+            <div className="code-block" style={{ fontSize: 13 }}>
+              <button
+                className="copy-btn"
+                onClick={() => navigator.clipboard.writeText(manualKey)}
+              >
+                Copy
+              </button>
+              <code>{manualKey}</code>
+            </div>
+            <p style={{ fontSize: 12, color: "#999", marginTop: 6 }}>
+              Save this — it won&apos;t be shown again.
+            </p>
+          </div>
+
+          <div>
+            <p style={{ fontSize: 13, color: "#666", marginBottom: 8, fontWeight: 500 }}>
+              Connect to Claude Code
+            </p>
+            <div className="code-block" style={{ fontSize: 12 }}>
+              <button
+                className="copy-btn"
+                onClick={() => navigator.clipboard.writeText(mcpCmd)}
+              >
+                Copy
+              </button>
+              <code>{mcpCmd}</code>
+            </div>
+          </div>
         </div>
       </Shell>
     );
