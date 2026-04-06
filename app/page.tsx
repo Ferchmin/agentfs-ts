@@ -1,50 +1,196 @@
+import Link from "next/link";
+
+function Logo({ size = 28 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
+      <path d="M16 2L30 28H2L16 2Z" fill="#0a0a0a" />
+    </svg>
+  );
+}
+
 export default function Home() {
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", maxWidth: 640, margin: "80px auto", padding: "0 20px" }}>
-      <h1 style={{ fontSize: 48, fontWeight: 700, marginBottom: 8 }}>AgentFS</h1>
-      <p style={{ fontSize: 20, color: "#666", marginBottom: 40 }}>
-        Cloud storage for AI agents with full version history.
-      </p>
+    <>
+      {/* Nav */}
+      <nav className="nav">
+        <Link href="/" className="nav-logo">
+          <Logo />
+          AgentFS
+        </Link>
+        <div className="nav-links">
+          <Link href="/login">Login</Link>
+          <Link href="/signup" className="btn btn-primary btn-small">
+            Get Started
+          </Link>
+        </div>
+      </nav>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-        <section>
-          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>REST API</h2>
-          <code style={{ display: "block", background: "#f5f5f5", padding: 12, borderRadius: 8, fontSize: 14 }}>
-            curl -X PUT /api/files?path=hello.txt \<br />
-            &nbsp;&nbsp;-H &quot;Authorization: Bearer agentfs_...&quot; \<br />
-            &nbsp;&nbsp;-d &apos;{`{"content":"Hello, World!"}`}&apos;
-          </code>
+      {/* Hero */}
+      <main style={{ flex: 1 }}>
+        <section
+          style={{
+            textAlign: "center",
+            padding: "100px 24px 80px",
+            maxWidth: 640,
+            margin: "0 auto",
+          }}
+        >
+          <div style={{ marginBottom: 24 }}>
+            <Logo size={56} />
+          </div>
+          <h1
+            style={{
+              fontSize: 48,
+              fontWeight: 700,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.1,
+              marginBottom: 16,
+            }}
+          >
+            Cloud storage
+            <br />
+            for AI agents
+          </h1>
+          <p
+            style={{
+              fontSize: 18,
+              color: "#666",
+              maxWidth: 440,
+              margin: "0 auto 40px",
+              lineHeight: 1.6,
+            }}
+          >
+            Every file change is a versioned commit. Read, write, and revert
+            from any agent via REST API or MCP.
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+            <Link href="/signup" className="btn btn-primary">
+              Get Started Free
+            </Link>
+            <Link href="#how-it-works" className="btn btn-secondary">
+              How It Works
+            </Link>
+          </div>
         </section>
 
-        <section>
-          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>MCP Endpoint</h2>
-          <code style={{ display: "block", background: "#f5f5f5", padding: 12, borderRadius: 8, fontSize: 14 }}>
-            claude mcp add --transport http agentfs \<br />
-            &nbsp;&nbsp;https://your-app.vercel.app/api/mcp?key=agentfs_...
-          </code>
+        {/* Features */}
+        <section
+          id="how-it-works"
+          className="container-wide"
+          style={{ paddingBottom: 80 }}
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 20,
+            }}
+          >
+            <div className="card">
+              <div style={{ fontSize: 24, marginBottom: 12 }}>&#9650;</div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
+                Version History
+              </h3>
+              <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6 }}>
+                Every write is a commit. Browse history, view diffs, and revert
+                any change. Agents can experiment safely.
+              </p>
+            </div>
+            <div className="card">
+              <div style={{ fontSize: 24, marginBottom: 12 }}>&#9670;</div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
+                MCP Integration
+              </h3>
+              <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6 }}>
+                Plug into Claude, Cursor, or any MCP-compatible client with one
+                command. No local server needed.
+              </p>
+            </div>
+            <div className="card">
+              <div style={{ fontSize: 24, marginBottom: 12 }}>&#9724;</div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>
+                REST API
+              </h3>
+              <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6 }}>
+                Simple PUT/GET/DELETE for files. Search, list directories, and
+                manage API keys programmatically.
+              </p>
+            </div>
+          </div>
         </section>
 
-        <section>
-          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Endpoints</h2>
-          <ul style={{ lineHeight: 1.8, fontSize: 14 }}>
-            <li><code>POST /api/auth/signup</code> — Create account</li>
-            <li><code>POST /api/auth/login</code> — Sign in</li>
-            <li><code>GET /api/auth/me</code> — Current user</li>
-            <li><code>PUT /api/files?path=...</code> — Write file</li>
-            <li><code>GET /api/files?path=...</code> — Read file</li>
-            <li><code>DELETE /api/files?path=...</code> — Delete file</li>
-            <li><code>POST /api/files/move</code> — Move/rename</li>
-            <li><code>GET /api/list?path=...</code> — List directory</li>
-            <li><code>GET /api/search?q=...</code> — Search files</li>
-            <li><code>GET /api/history</code> — Commit log</li>
-            <li><code>GET /api/diff?commit=...</code> — View diff</li>
-            <li><code>POST /api/revert</code> — Revert commit</li>
-            <li><code>POST /api/keys</code> — Create API key</li>
-            <li><code>GET /api/keys</code> — List API keys</li>
-            <li><code>POST /api/mcp</code> — MCP JSON-RPC</li>
-          </ul>
+        {/* Code example */}
+        <section className="container" style={{ paddingBottom: 100 }}>
+          <h2
+            style={{
+              fontSize: 24,
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              textAlign: "center",
+              marginBottom: 32,
+            }}
+          >
+            Connect in seconds
+          </h2>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "#666",
+                  marginBottom: 8,
+                  fontWeight: 500,
+                }}
+              >
+                Add to Claude Code
+              </p>
+              <div className="code-block">
+                <code>
+                  claude mcp add agentfs \<br />
+                  &nbsp;&nbsp;--transport http \<br />
+                  &nbsp;&nbsp;https://agentfs-ts.vercel.app/api/mcp?key=YOUR_KEY
+                </code>
+              </div>
+            </div>
+
+            <div>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "#666",
+                  marginBottom: 8,
+                  fontWeight: 500,
+                }}
+              >
+                Or use the REST API
+              </p>
+              <div className="code-block">
+                <code>
+                  {`curl -X PUT /api/files?path=notes.md \\`}
+                  <br />
+                  {`  -H "Authorization: Bearer agentfs_..." \\`}
+                  <br />
+                  {`  -d '{"content":"Hello from my agent!"}'`}
+                </code>
+              </div>
+            </div>
+          </div>
         </section>
-      </div>
-    </div>
+      </main>
+
+      {/* Footer */}
+      <footer
+        style={{
+          borderTop: "1px solid #e5e5e5",
+          padding: "24px",
+          textAlign: "center",
+          fontSize: 13,
+          color: "#999",
+        }}
+      >
+        AgentFS
+      </footer>
+    </>
   );
 }
