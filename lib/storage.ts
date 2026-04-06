@@ -4,7 +4,7 @@
  */
 
 import { sql, ensureMigrated } from "./db";
-import { put, del, head } from "@vercel/blob";
+import { put, del, head, get } from "@vercel/blob";
 import crypto from "crypto";
 import { v4 as uuid } from "uuid";
 
@@ -52,14 +52,23 @@ function blobKey(sha: string): string {
 
 async function blobPut(sha: string, content: Buffer): Promise<string> {
   const key = blobKey(sha);
-  const { url } = await put(key, content, { access: "public", addRandomSuffix: false });
+  const { url } = await put(key, content, { access: "private", addRandomSuffix: false });
   return url;
 }
 
 async function blobGet(storeKey: string): Promise<Buffer> {
-  const res = await fetch(storeKey);
-  if (!res.ok) throw new Error(`Blob fetch failed: ${res.status}`);
-  return Buffer.from(await res.arrayBuffer());
+  const result = await get(storeKey, { access: "private" });
+  if (!result) throw new Error(`Blob not found: ${storeKey}`);
+  // result has .stream — read it into a buffer
+  if (!result.stream) throw new Error(`Blob stream null: ${storeKey}`);
+  const reader = result.stream.getReader();
+  const chunks: Uint8Array[] = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
+  }
+  return Buffer.concat(chunks);
 }
 
 async function blobExists(sha: string): Promise<string | null> {
