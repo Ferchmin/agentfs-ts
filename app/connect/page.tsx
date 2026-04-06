@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -12,6 +12,198 @@ export default function ConnectPage() {
     </Suspense>
   );
 }
+
+// --- Tabs for connection snippets ---
+
+type Tab = "claude-code" | "claude-desktop" | "cursor" | "mcp-json" | "curl" | "python" | "typescript";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "claude-code", label: "Claude Code" },
+  { id: "claude-desktop", label: "Claude Desktop" },
+  { id: "cursor", label: "Cursor" },
+  { id: "mcp-json", label: ".mcp.json" },
+  { id: "curl", label: "curl" },
+  { id: "python", label: "Python" },
+  { id: "typescript", label: "TypeScript" },
+];
+
+function getSnippet(tab: Tab, endpointUrl: string, apiKey: string): string {
+  switch (tab) {
+    case "claude-code":
+      return `claude mcp add --transport http agentfs \\\n  "${endpointUrl}?key=${apiKey}"`;
+
+    case "claude-desktop":
+      return JSON.stringify({
+        mcpServers: {
+          agentfs: {
+            type: "http",
+            url: `${endpointUrl}?key=${apiKey}`,
+          },
+        },
+      }, null, 2);
+
+    case "cursor":
+      return JSON.stringify({
+        mcpServers: {
+          agentfs: {
+            url: `${endpointUrl}?key=${apiKey}`,
+          },
+        },
+      }, null, 2);
+
+    case "mcp-json":
+      return JSON.stringify({
+        mcpServers: {
+          agentfs: {
+            type: "http",
+            url: `${endpointUrl}?key=${apiKey}`,
+          },
+        },
+      }, null, 2);
+
+    case "curl":
+      return `# Write a file
+curl -X PUT "${endpointUrl.replace("/mcp", "/files")}?path=hello.txt" \\
+  -H "Authorization: Bearer ${apiKey}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"content":"Hello World!"}'
+
+# Read a file
+curl "${endpointUrl.replace("/mcp", "/files")}?path=hello.txt&format=text" \\
+  -H "Authorization: Bearer ${apiKey}"`;
+
+    case "python":
+      return `import requests
+
+API_KEY = "${apiKey}"
+BASE = "${endpointUrl.replace("/mcp", "")}"
+HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+
+# Write a file
+requests.put(
+    f"{BASE}/files", params={"path": "hello.txt"},
+    headers=HEADERS,
+    json={"content": "Hello World!"}
+)
+
+# Read a file
+r = requests.get(
+    f"{BASE}/files", params={"path": "hello.txt", "format": "text"},
+    headers=HEADERS
+)
+print(r.text)`;
+
+    case "typescript":
+      return `const API_KEY = "${apiKey}";
+const BASE = "${endpointUrl.replace("/mcp", "")}";
+
+// Write a file
+await fetch(\`\${BASE}/files?path=hello.txt\`, {
+  method: "PUT",
+  headers: {
+    "Authorization": \`Bearer \${API_KEY}\`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ content: "Hello World!" }),
+});
+
+// Read a file
+const res = await fetch(
+  \`\${BASE}/files?path=hello.txt&format=text\`,
+  { headers: { "Authorization": \`Bearer \${API_KEY}\` } }
+);
+console.log(await res.text());`;
+  }
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      className="copy-btn"
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+    >
+      {copied ? "Copied!" : "Copy"}
+    </button>
+  );
+}
+
+function ConnectionSnippets({ apiKey }: { apiKey: string }) {
+  const [activeTab, setActiveTab] = useState<Tab>("claude-code");
+  const endpointUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/api/mcp`
+      : "https://agentfs-ts.vercel.app/api/mcp";
+
+  const snippet = getSnippet(activeTab, endpointUrl, apiKey);
+
+  return (
+    <div>
+      {/* Tabs */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 4,
+          marginBottom: 12,
+        }}
+      >
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: "6px 12px",
+              borderRadius: 6,
+              border: "1px solid",
+              borderColor: activeTab === tab.id ? "#0a0a0a" : "#e5e5e5",
+              background: activeTab === tab.id ? "#0a0a0a" : "transparent",
+              color: activeTab === tab.id ? "#fff" : "#666",
+              fontSize: 12,
+              fontWeight: 500,
+              cursor: "pointer",
+              fontFamily: "var(--font-sans)",
+              transition: "all 0.15s",
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Snippet */}
+      <div className="code-block" style={{ fontSize: 12 }}>
+        <CopyButton text={snippet} />
+        <pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+          {snippet}
+        </pre>
+      </div>
+
+      {/* Hint for JSON tabs */}
+      {(activeTab === "claude-desktop") && (
+        <p style={{ fontSize: 11, color: "#999", marginTop: 6 }}>
+          Add to ~/Library/Application Support/Claude/claude_desktop_config.json
+        </p>
+      )}
+      {activeTab === "mcp-json" && (
+        <p style={{ fontSize: 11, color: "#999", marginTop: 6 }}>
+          Add to .mcp.json in your project root
+        </p>
+      )}
+      {activeTab === "cursor" && (
+        <p style={{ fontSize: 11, color: "#999", marginTop: 6 }}>
+          Add to .cursor/mcp.json in your project
+        </p>
+      )}
+    </div>
+  );
+}
+
+// --- Main flow ---
 
 function ConnectContent() {
   const searchParams = useSearchParams();
@@ -32,7 +224,6 @@ function ConnectContent() {
     setSubmitting(true);
 
     try {
-      // 1. Auth
       const endpoint = mode === "signup" ? "/api/auth/signup" : "/api/auth/login";
       const body =
         mode === "signup"
@@ -51,14 +242,14 @@ function ConnectContent() {
         return;
       }
 
-      // 2. Create API key
+      // Create API key
       const keyRes = await fetch("/api/keys", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${data.token}`,
         },
-        body: JSON.stringify({ name: "claude-code" }),
+        body: JSON.stringify({ name: "default" }),
       });
 
       const keyData = await keyRes.json();
@@ -67,13 +258,11 @@ function ConnectContent() {
         return;
       }
 
-      // 3. Redirect back to callback with the key
       if (callbackUrl) {
         const separator = callbackUrl.includes("?") ? "&" : "?";
         window.location.href = `${callbackUrl}${separator}key=${encodeURIComponent(keyData.key)}`;
         setDone(true);
       } else {
-        // No callback — show the key manually
         setManualKey(keyData.key);
         setDone(true);
       }
@@ -84,49 +273,67 @@ function ConnectContent() {
     }
   }
 
+  // --- Success screen ---
   if (done && manualKey) {
-    const mcpCmd = `claude mcp add --transport http agentfs "${window.location.origin}/api/mcp?key=${manualKey}"`;
+    const endpointUrl =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/api/mcp`
+        : "https://agentfs-ts.vercel.app/api/mcp";
+
     return (
-      <Shell>
+      <Shell wide>
         <div>
           <div style={{ textAlign: "center", marginBottom: 32 }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>&#10003;</div>
-            <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
+            <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>
               You&apos;re in!
             </h1>
+            <p style={{ color: "#666", fontSize: 14 }}>
+              Use the credentials below to connect.
+            </p>
           </div>
 
-          <div style={{ marginBottom: 24 }}>
-            <p style={{ fontSize: 13, color: "#666", marginBottom: 8, fontWeight: 500 }}>
-              Your API key
-            </p>
-            <div className="code-block" style={{ fontSize: 13 }}>
-              <button
-                className="copy-btn"
-                onClick={() => navigator.clipboard.writeText(manualKey)}
-              >
-                Copy
-              </button>
-              <code>{manualKey}</code>
+          {/* Credentials */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 12,
+              marginBottom: 28,
+            }}
+          >
+            <div>
+              <p style={{ fontSize: 12, color: "#666", marginBottom: 6, fontWeight: 500 }}>
+                API Key
+              </p>
+              <div className="code-block" style={{ fontSize: 11, padding: "12px 14px" }}>
+                <CopyButton text={manualKey} />
+                <code style={{ wordBreak: "break-all" }}>{manualKey}</code>
+              </div>
             </div>
-            <p style={{ fontSize: 12, color: "#999", marginTop: 6 }}>
-              Save this — it won&apos;t be shown again.
-            </p>
+            <div>
+              <p style={{ fontSize: 12, color: "#666", marginBottom: 6, fontWeight: 500 }}>
+                MCP Endpoint
+              </p>
+              <div className="code-block" style={{ fontSize: 11, padding: "12px 14px" }}>
+                <CopyButton text={`${endpointUrl}?key=${manualKey}`} />
+                <code style={{ wordBreak: "break-all" }}>
+                  {endpointUrl}?key=...
+                </code>
+              </div>
+            </div>
           </div>
 
+          <p style={{ fontSize: 12, color: "#999", marginBottom: 20, textAlign: "center" }}>
+            Save your API key — it won&apos;t be shown again.
+          </p>
+
+          {/* Tabbed snippets */}
           <div>
-            <p style={{ fontSize: 13, color: "#666", marginBottom: 8, fontWeight: 500 }}>
-              Connect to Claude Code
+            <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>
+              Connect your client
             </p>
-            <div className="code-block" style={{ fontSize: 12 }}>
-              <button
-                className="copy-btn"
-                onClick={() => navigator.clipboard.writeText(mcpCmd)}
-              >
-                Copy
-              </button>
-              <code>{mcpCmd}</code>
-            </div>
+            <ConnectionSnippets apiKey={manualKey} />
           </div>
         </div>
       </Shell>
@@ -142,13 +349,14 @@ function ConnectContent() {
             Connected!
           </h1>
           <p style={{ color: "#666", fontSize: 15 }}>
-            You can close this tab and return to Claude Code.
+            You can close this tab and return to your app.
           </p>
         </div>
       </Shell>
     );
   }
 
+  // --- Auth form ---
   return (
     <Shell>
       <div style={{ textAlign: "center", marginBottom: 32 }}>
@@ -281,7 +489,7 @@ function ConnectContent() {
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({ children, wide }: { children: React.ReactNode; wide?: boolean }) {
   return (
     <>
       <nav className="nav">
@@ -301,7 +509,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           padding: "40px 24px",
         }}
       >
-        <div style={{ width: "100%", maxWidth: 380 }}>{children}</div>
+        <div style={{ width: "100%", maxWidth: wide ? 580 : 380 }}>{children}</div>
       </main>
     </>
   );
