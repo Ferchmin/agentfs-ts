@@ -39,7 +39,9 @@ export async function PUT(request: NextRequest) {
     if (err instanceof AuthError) {
       return Response.json({ error: err.message }, { status: err.status });
     }
-    return Response.json({ error: "Internal error" }, { status: 500 });
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    console.error("PUT /api/files error:", msg, err);
+    return Response.json({ error: msg }, { status: 500 });
   }
 }
 
