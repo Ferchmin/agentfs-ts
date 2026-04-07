@@ -15,12 +15,13 @@ export default function ConnectPage() {
 
 // --- Tabs for connection snippets ---
 
-type Tab = "claude-code" | "claude-desktop" | "cursor" | "mcp-json";
+type Tab = "claude-code" | "claude-desktop" | "cursor" | "codex" | "mcp-json";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "claude-code", label: "Claude Code" },
   { id: "claude-desktop", label: "Claude Desktop" },
   { id: "cursor", label: "Cursor" },
+  { id: "codex", label: "Codex" },
   { id: "mcp-json", label: ".mcp.json" },
 ];
 
@@ -47,6 +48,10 @@ function getSnippet(tab: Tab, endpointUrl: string, apiKey: string): string {
           },
         },
       }, null, 2);
+
+    case "codex":
+      return `[mcp_servers.agentfs]
+url = "${endpointUrl}?key=${apiKey}"`;
 
     case "mcp-json":
       return JSON.stringify({
@@ -142,6 +147,11 @@ function ConnectionSnippets({ apiKey }: { apiKey: string }) {
       {activeTab === "cursor" && (
         <p style={{ fontSize: 11, color: "#999", marginTop: 6 }}>
           Add to .cursor/mcp.json in your project
+        </p>
+      )}
+      {activeTab === "codex" && (
+        <p style={{ fontSize: 11, color: "#999", marginTop: 6 }}>
+          Add to ~/.codex/config.toml
         </p>
       )}
     </div>
