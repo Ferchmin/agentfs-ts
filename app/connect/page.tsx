@@ -15,16 +15,13 @@ export default function ConnectPage() {
 
 // --- Tabs for connection snippets ---
 
-type Tab = "claude-code" | "claude-desktop" | "cursor" | "mcp-json" | "curl" | "python" | "typescript";
+type Tab = "claude-code" | "claude-desktop" | "cursor" | "mcp-json";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "claude-code", label: "Claude Code" },
   { id: "claude-desktop", label: "Claude Desktop" },
   { id: "cursor", label: "Cursor" },
   { id: "mcp-json", label: ".mcp.json" },
-  { id: "curl", label: "curl" },
-  { id: "python", label: "Python" },
-  { id: "typescript", label: "TypeScript" },
 ];
 
 function getSnippet(tab: Tab, endpointUrl: string, apiKey: string): string {
@@ -61,58 +58,6 @@ function getSnippet(tab: Tab, endpointUrl: string, apiKey: string): string {
         },
       }, null, 2);
 
-    case "curl":
-      return `# Write a file
-curl -X PUT "${endpointUrl.replace("/mcp", "/files")}?path=hello.txt" \\
-  -H "Authorization: Bearer ${apiKey}" \\
-  -H "Content-Type: application/json" \\
-  -d '{"content":"Hello World!"}'
-
-# Read a file
-curl "${endpointUrl.replace("/mcp", "/files")}?path=hello.txt&format=text" \\
-  -H "Authorization: Bearer ${apiKey}"`;
-
-    case "python":
-      return `import requests
-
-API_KEY = "${apiKey}"
-BASE = "${endpointUrl.replace("/mcp", "")}"
-HEADERS = {"Authorization": f"Bearer {API_KEY}"}
-
-# Write a file
-requests.put(
-    f"{BASE}/files", params={"path": "hello.txt"},
-    headers=HEADERS,
-    json={"content": "Hello World!"}
-)
-
-# Read a file
-r = requests.get(
-    f"{BASE}/files", params={"path": "hello.txt", "format": "text"},
-    headers=HEADERS
-)
-print(r.text)`;
-
-    case "typescript":
-      return `const API_KEY = "${apiKey}";
-const BASE = "${endpointUrl.replace("/mcp", "")}";
-
-// Write a file
-await fetch(\`\${BASE}/files?path=hello.txt\`, {
-  method: "PUT",
-  headers: {
-    "Authorization": \`Bearer \${API_KEY}\`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({ content: "Hello World!" }),
-});
-
-// Read a file
-const res = await fetch(
-  \`\${BASE}/files?path=hello.txt&format=text\`,
-  { headers: { "Authorization": \`Bearer \${API_KEY}\` } }
-);
-console.log(await res.text());`;
   }
 }
 
@@ -176,7 +121,7 @@ function ConnectionSnippets({ apiKey }: { apiKey: string }) {
       </div>
 
       {/* Snippet */}
-      <div className="code-block" style={{ fontSize: 12 }}>
+      <div className="code-block" style={{ fontSize: 12, padding: "16px 70px 16px 20px" }}>
         <CopyButton text={snippet} />
         <pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
           {snippet}
@@ -296,9 +241,9 @@ function ConnectContent() {
           {/* Credentials */}
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 12,
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
               marginBottom: 28,
             }}
           >
@@ -306,7 +251,7 @@ function ConnectContent() {
               <p style={{ fontSize: 12, color: "#666", marginBottom: 6, fontWeight: 500 }}>
                 API Key
               </p>
-              <div className="code-block" style={{ fontSize: 11, padding: "12px 14px" }}>
+              <div className="code-block" style={{ fontSize: 13, padding: "14px 70px 14px 16px" }}>
                 <CopyButton text={manualKey} />
                 <code style={{ wordBreak: "break-all" }}>{manualKey}</code>
               </div>
@@ -315,10 +260,10 @@ function ConnectContent() {
               <p style={{ fontSize: 12, color: "#666", marginBottom: 6, fontWeight: 500 }}>
                 MCP Endpoint
               </p>
-              <div className="code-block" style={{ fontSize: 11, padding: "12px 14px" }}>
+              <div className="code-block" style={{ fontSize: 13, padding: "14px 70px 14px 16px" }}>
                 <CopyButton text={`${endpointUrl}?key=${manualKey}`} />
                 <code style={{ wordBreak: "break-all" }}>
-                  {endpointUrl}?key=...
+                  {endpointUrl}?key={manualKey}
                 </code>
               </div>
             </div>
