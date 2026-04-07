@@ -121,7 +121,7 @@ function ConnectionSnippets({ apiKey }: { apiKey: string }) {
       </div>
 
       {/* Snippet */}
-      <div className="code-block" style={{ fontSize: 12, padding: "16px 70px 16px 20px" }}>
+      <div className="code-block" style={{ fontSize: 12, padding: "36px 16px 14px 20px" }}>
         <CopyButton text={snippet} />
         <pre style={{ margin: 0, whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
           {snippet}
@@ -251,7 +251,7 @@ function ConnectContent() {
               <p style={{ fontSize: 12, color: "#666", marginBottom: 6, fontWeight: 500 }}>
                 API Key
               </p>
-              <div className="code-block" style={{ fontSize: 13, padding: "14px 70px 14px 16px" }}>
+              <div className="code-block" style={{ fontSize: 13, padding: "36px 16px 14px 16px" }}>
                 <CopyButton text={manualKey} />
                 <code style={{ wordBreak: "break-all" }}>{manualKey}</code>
               </div>
@@ -260,7 +260,7 @@ function ConnectContent() {
               <p style={{ fontSize: 12, color: "#666", marginBottom: 6, fontWeight: 500 }}>
                 MCP Endpoint
               </p>
-              <div className="code-block" style={{ fontSize: 13, padding: "14px 70px 14px 16px" }}>
+              <div className="code-block" style={{ fontSize: 13, padding: "36px 16px 14px 16px" }}>
                 <CopyButton text={`${endpointUrl}?key=${manualKey}`} />
                 <code style={{ wordBreak: "break-all" }}>
                   {endpointUrl}?key={manualKey}
